@@ -132,12 +132,33 @@
   .scenario-table tr.hl td:first-child { color: var(--accent); font-weight: 600; }
   .pp { color: var(--accent); font-weight: 600; } .pn { color: var(--danger); } .pm { color: var(--warn); }
 
-  .rehab-item { display: grid; grid-template-columns: 1fr 90px 70px 80px; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .rehab-item.hdr { color: var(--text-muted); font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; padding-bottom: 6px; }
-  .rehab-item input { background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; padding: 5px 8px; width: 100%; text-align: center; transition: border-color 0.15s; }
-  .rehab-item input:focus { outline: none; border-color: var(--accent2); }
-  .rehab-est { color: var(--accent); font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
+  /* sqft items: include checkbox | item name | $/unit | sqft override | estimate */
+  .rehab-item { display: grid; grid-template-columns: 22px 1fr 80px 90px 82px; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .rehab-item.hdr { color: var(--text-muted); font-size: 10px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; padding-bottom: 6px; }
+  /* non-sqft items: include checkbox | item name | $/unit | qty | estimate */
+  .rehab-item.qty-row { grid-template-columns: 22px 1fr 80px 90px 82px; }
+
+  .rehab-item input[type="number"] { background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 12px; padding: 5px 7px; width: 100%; text-align: center; transition: border-color 0.15s; }
+  .rehab-item input[type="number"]:focus { outline: none; border-color: var(--accent2); }
+  .rehab-item input[type="number"]:disabled { opacity: 0.3; pointer-events: none; }
+
+  /* custom checkbox */
+  .rh-check { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+
+  /* sqft override pill */
+  .sqft-override-wrap { position: relative; }
+  .sqft-override-wrap input { padding-right: 28px !important; }
+  .sqft-override-wrap .sqft-lbl { position: absolute; right: 7px; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--text-muted); pointer-events: none; }
+  .sqft-auto-tag { font-size: 10px; color: var(--accent2); background: var(--accent2-dim); border-radius: 4px; padding: 1px 5px; margin-left: 3px; vertical-align: middle; white-space: nowrap; }
+
+  .rehab-est { color: var(--accent); font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; }
+  .rehab-est.zero { color: var(--text-muted); }
   .sec-div { font-size: 11px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-secondary); padding: 14px 0 6px; border-top: 1px solid var(--border); margin-top: 6px; }
+
+  /* realtor commission rows in output */
+  .comm-row { background: var(--accent-dim); border-radius: 6px; padding: 8px 10px; margin-top: 8px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .comm-row .lbl { color: var(--text-secondary); }
+  .comm-row .val { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
 
   /* Modal */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -343,6 +364,9 @@
             <div class="field"><label>Sellers Closing Costs</label><div class="ci-wrap"><span class="ci-prefix">$</span><input class="ci-display" id="f-scc" value="0" oninput="calcFlip()"></div></div>
             <div class="field"><label>Holding Costs</label><div class="ci-wrap"><span class="ci-prefix">$</span><input class="ci-display" id="f-hold" value="3,000" oninput="calcFlip()"></div></div>
             <div class="field"><label>Project Months</label><div class="ci-wrap"><input class="ci-display plain" id="f-months" value="6" oninput="calcFlip()"></div></div>
+            <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+            <div class="field"><label>Acquisition Realtor %</label><div class="ci-wrap"><input class="ci-display pct" id="f-acq-comm-pct" value="3" oninput="calcFlip()"><span class="ci-suffix">%</span></div></div>
+            <div class="field"><label style="color:var(--text-muted);font-size:12px;">Acquisition Realtor Fee</label><div style="font-size:13px;font-weight:500;color:var(--text-secondary);font-variant-numeric:tabular-nums;min-width:80px;text-align:right;" id="f-acq-comm-val">—</div></div>
           </div>
         </div>
         <div class="card mt-18">
@@ -375,6 +399,7 @@
         <div class="card">
           <div class="card-title">Cost Breakdown</div>
           <div class="out-row"><span class="lbl">Purchase Price</span><span class="val" id="fo-purchase">—</span></div>
+          <div class="out-row"><span class="lbl">Acquisition Realtor Fee</span><span class="val" id="fo-acq-comm">—</span></div>
           <div class="out-row"><span class="lbl">Rehab Budget</span><span class="val" id="fo-rehab">—</span></div>
           <div class="out-row"><span class="lbl">Closing Costs</span><span class="val" id="fo-cc">—</span></div>
           <div class="out-row"><span class="lbl">Holding Costs</span><span class="val" id="fo-hold">—</span></div>
@@ -577,18 +602,26 @@
       <div class="summary-pill"><div class="sp-val" id="rh-s-sys">$0</div><div class="sp-lbl">Systems</div></div>
       <div class="summary-pill"><div class="sp-val" id="rh-s-ext">$0</div><div class="sp-lbl">Kitchen/Bath/Ext.</div></div>
     </div>
+
     <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
         <div class="card-title" style="margin:0;border:none;padding:0;">Line Item Estimator</div>
-        <div style="font-size:12px;color:var(--text-secondary);">Property SQFT: <span id="rh-sqft-ref" style="color:var(--accent);font-weight:600;">1,000</span> — auto-applied to /SQFT items</div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div style="font-size:12px;color:var(--text-secondary);">
+            Home SQFT: <span id="rh-sqft-ref" style="color:var(--accent);font-weight:600;">1,000</span>
+            <span style="color:var(--text-muted);margin:0 4px">·</span>
+            <span style="color:var(--text-muted)">Check box = entire home. Override SQFT for partial rooms.</span>
+          </div>
+          <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;">
+            <input type="checkbox" id="rh-auto-push" checked style="accent-color:var(--accent);width:14px;height:14px;">
+            Auto-push to Flip &amp; Rental
+          </label>
+        </div>
       </div>
       <div id="rehab-list"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 0 4px;border-top:2px solid var(--accent);margin-top:10px;">
         <span style="font-size:14px;font-weight:600;">Grand Total</span>
         <span style="font-family:'Lora',serif;font-size:28px;font-weight:700;color:var(--accent);" id="rh-grand-total">$0</span>
-      </div>
-      <div style="text-align:right;margin-top:10px;">
-        <button class="btn btn-primary" onclick="pushRehabToFlip()">Push to Flip &amp; Rental →</button>
       </div>
     </div>
   </div>
@@ -921,12 +954,14 @@ function syncAll() {
 // ── Flip ───────────────────────────────────────
 function calcFlip() {
   const purchase=pv('f-purchase'),rehab=pv('f-rehab'),cc=pv('f-cc'),scc=pv('f-scc'),hold=pv('f-hold'),months=pv('f-months');
+  const acqCommPct=pp('f-acq-comm-pct');
   const hmlLtvF=pv('f-hml-ltv'),hmlPtsPct=pp('f-hml-pts'),hmlRatePct=pp('f-hml-rate');
   const gapPtsPct=pp('f-gap-pts'),gapRatePct=pp('f-gap-rate');
   const reCommPct=pp('f-recomm'),rccPct=pp('f-rcc');
   const intType=$('f-int-type').value, arv=pv('prop-arv');
 
-  const base=purchase+rehab+cc+scc+hold;
+  const acqComm=purchase*acqCommPct;
+  const base=purchase+rehab+cc+scc+hold+acqComm;
   const hmlLoan=hmlLtvF*base;
   const hmlPts=hmlLoan*hmlPtsPct;
   const hmlInt=intType==='annual'?hmlLoan*hmlRatePct*(months/12):hmlLoan*hmlRatePct*months;
@@ -938,6 +973,7 @@ function calcFlip() {
 
   $('fo-purchase').textContent=fmt(purchase); $('fo-rehab').textContent=fmt(rehab);
   $('fo-cc').textContent=fmt(cc+scc); $('fo-hold').textContent=fmt(hold);
+  const foAcq=$('fo-acq-comm'); if(foAcq) foAcq.textContent=fmt(acqComm);
   $('fo-hml-loan').textContent=fmt(hmlLoan); $('fo-hml-pts').textContent=fmt(hmlPts);
   $('fo-hml-int').textContent=fmt(hmlInt); $('fo-gap-loan').textContent=fmt(gapLoan);
   $('fo-gap-int').textContent=fmt(gapInt); $('fo-tpc').textContent=fmt(tpc);
@@ -946,6 +982,10 @@ function calcFlip() {
   $('fo-net').textContent=fmt(netResale);
   const pe=$('fo-profit'); pe.textContent=fmt(profit); cv(pe,profit);
   $('fo-profit-pct').textContent=fmtPct(profitPct); $('fo-roi').textContent=fmtPct(roi);
+
+  // Acquisition realtor fee display (read-only)
+  const acqEl=$('f-acq-comm-val');
+  if(acqEl) acqEl.textContent=fmt(acqComm);
 
   const minPct=pp('f-min-pct'),minDol=pv('f-min-dol');
   const isDeal=profit>=minDol&&profitPct>=minPct;
@@ -1110,49 +1150,139 @@ function buildRehabUI() {
   const c=$('rehab-list'); c.innerHTML=''; let curSec='';
   rehabItems.forEach((item,i)=>{
     const [sec,name,cost,unit,dq]=item;
+    const isSqft = unit==='/SQFT'||unit==='/100SQFT';
+    const isFlat = unit==='flat';
+    const isEa   = !isSqft && !isFlat;
+
     if(sec!==curSec){
       curSec=sec;
       c.innerHTML+=`<div class="sec-div">${sec}</div>`;
-      c.innerHTML+=`<div class="rehab-item hdr"><span>Item</span><span style="text-align:right">$/Unit</span><span style="text-align:center">Qty</span><span style="text-align:right">Estimate</span></div>`;
+      if(isSqft){
+        c.innerHTML+=`<div class="rehab-item hdr"><span></span><span>Item</span><span style="text-align:right">$/SQFT</span><span style="text-align:center">SQFT Override</span><span style="text-align:right">Estimate</span></div>`;
+      } else {
+        c.innerHTML+=`<div class="rehab-item hdr"><span></span><span>Item</span><span style="text-align:right">$/Unit</span><span style="text-align:center">Qty</span><span style="text-align:right">Estimate</span></div>`;
+      }
     }
-    c.innerHTML+=`<div class="rehab-item" id="rh-row-${i}">
-      <span>${name} <span style="color:var(--text-muted);font-size:11px">${unit}</span></span>
-      <span style="color:var(--text-secondary);text-align:right">${cost>=100?'$'+cost.toLocaleString():'$'+cost}</span>
-      <input type="number" min="0" value="${dq}" id="rh-qty-${i}" oninput="calcRehab()">
-      <span class="rehab-est" id="rh-est-${i}">$0</span>
-    </div>`;
+
+    if(isSqft){
+      // Checkbox row: checked = use full home SQFT; unchecked + override field
+      c.innerHTML+=`<div class="rehab-item" id="rh-row-${i}">
+        <input type="checkbox" class="rh-check" id="rh-chk-${i}" onchange="onRehabCheck(${i})" ${dq?'checked':''}>
+        <span style="color:var(--text)">${name} <span class="sqft-auto-tag" id="rh-tag-${i}" style="${dq?'':'display:none'}">${unit}</span></span>
+        <span style="color:var(--text-secondary);text-align:right">$${cost}</span>
+        <div class="sqft-override-wrap">
+          <input type="number" min="0" id="rh-sqft-${i}" placeholder="Custom SQFT"
+            style="width:100%" oninput="calcRehab()"
+            ${dq?'disabled':''} value="">
+          <span class="sqft-lbl">ft²</span>
+        </div>
+        <span class="rehab-est zero" id="rh-est-${i}">$0</span>
+      </div>`;
+    } else if(isFlat){
+      // Flat cost — checkbox to include/exclude
+      c.innerHTML+=`<div class="rehab-item" id="rh-row-${i}">
+        <input type="checkbox" class="rh-check" id="rh-chk-${i}" onchange="calcRehab()" ${dq?'checked':''}>
+        <span style="color:var(--text)">${name} <span style="color:var(--text-muted);font-size:11px">${unit}</span></span>
+        <span style="color:var(--text-secondary);text-align:right">${cost>=100?'$'+cost.toLocaleString():'$'+cost}</span>
+        <span style="color:var(--text-muted);font-size:11px;text-align:center">—</span>
+        <span class="rehab-est ${dq?'':'zero'}" id="rh-est-${i}">${dq?fmt(cost):'$0'}</span>
+      </div>`;
+    } else {
+      // Per-ea / per-room / per-LF / var — numeric qty input
+      c.innerHTML+=`<div class="rehab-item" id="rh-row-${i}">
+        <input type="checkbox" class="rh-check" id="rh-chk-${i}" onchange="onRehabEaCheck(${i})" ${dq>0?'checked':''}>
+        <span style="color:var(--text)">${name} <span style="color:var(--text-muted);font-size:11px">${unit}</span></span>
+        <span style="color:var(--text-secondary);text-align:right">${cost>=100?'$'+cost.toLocaleString():'$'+cost}</span>
+        <input type="number" min="0" id="rh-qty-${i}" value="${dq||''}"
+          oninput="calcRehab()" ${dq===0?'disabled':''}>
+        <span class="rehab-est ${dq>0?'':'zero'}" id="rh-est-${i}">$0</span>
+      </div>`;
+    }
   });
+}
+
+function onRehabCheck(i) {
+  // SQFT item: toggle disabled state of override input
+  const chk=$(`rh-chk-${i}`), ovr=$(`rh-sqft-${i}`), tag=$(`rh-tag-${i}`);
+  if(chk.checked){
+    ovr.disabled=true; ovr.value='';
+    if(tag) tag.style.display='';
+  } else {
+    ovr.disabled=false; ovr.focus();
+    if(tag) tag.style.display='none';
+  }
+  calcRehab();
+}
+
+function onRehabEaCheck(i) {
+  // Per-ea item: enable/disable qty input
+  const chk=$(`rh-chk-${i}`), qty=$(`rh-qty-${i}`);
+  if(!qty) return;
+  if(chk.checked){ qty.disabled=false; if(!qty.value||qty.value==='0') qty.value=1; }
+  else { qty.disabled=true; qty.value=''; }
+  calcRehab();
 }
 
 function calcRehab() {
-  const sqft=pv('prop-sqft')||1000;
+  const propSqft = pv('prop-sqft')||1000;
   let grand=0; const st={};
+
   rehabItems.forEach((item,i)=>{
     const [sec,,cost,unit]=item;
-    const qty=parseFloat($(`rh-qty-${i}`)?.value)||0;
+    const isSqft   = unit==='/SQFT'||unit==='/100SQFT';
+    const isFlat   = unit==='flat';
+    const chk      = $(`rh-chk-${i}`);
+    const included = chk?.checked;
     let e=0;
-    if(unit==='/SQFT') e=cost*sqft*qty;
-    else if(unit==='/100SQFT') e=cost*(sqft/100)*qty;
-    else e=cost*qty;
-    const el=$(`rh-est-${i}`); if(el) el.textContent=e>0?fmt(e):'$0';
+
+    if(isSqft && included){
+      const overrideEl = $(`rh-sqft-${i}`);
+      const overrideSqft = overrideEl && !overrideEl.disabled ? (parseFloat(overrideEl.value)||0) : 0;
+      const useSqft = overrideSqft>0 ? overrideSqft : propSqft;
+      e = unit==='/100SQFT' ? cost*(useSqft/100) : cost*useSqft;
+    } else if(isFlat && included){
+      e = cost;
+    } else if(!isSqft && !isFlat){
+      const qtyEl=$(`rh-qty-${i}`);
+      const qty = qtyEl && !qtyEl.disabled ? (parseFloat(qtyEl.value)||0) : 0;
+      e = cost*qty;
+    }
+
+    const estEl=$(`rh-est-${i}`);
+    if(estEl){
+      estEl.textContent = e>0 ? fmt(e) : '$0';
+      estEl.className   = e>0 ? 'rehab-est' : 'rehab-est zero';
+    }
     grand+=e; st[sec]=(st[sec]||0)+e;
   });
-  $('rh-grand-total').textContent=fmt(grand);
-  $('rh-s-total').textContent=fmt(grand);
+
+  $('rh-grand-total').textContent = fmt(grand);
+  $('rh-s-total').textContent     = fmt(grand);
   const interior=['Interior – Flooring','Interior – General'].reduce((s,k)=>s+(st[k]||0),0);
   const sys=st['Systems']||0;
   const ext=['Kitchen','Bathrooms','Exterior'].reduce((s,k)=>s+(st[k]||0),0);
-  $('rh-s-int').textContent=fmt(interior); $('rh-s-sys').textContent=fmt(sys); $('rh-s-ext').textContent=fmt(ext);
-  const rr=$('rh-sqft-ref'); if(rr) rr.textContent=sqft.toLocaleString();
-  return grand;
-}
+  $('rh-s-int').textContent = fmt(interior);
+  $('rh-s-sys').textContent = fmt(sys);
+  $('rh-s-ext').textContent = fmt(ext);
+  const rr=$('rh-sqft-ref'); if(rr) rr.textContent=propSqft.toLocaleString();
 
-function pushRehabToFlip() {
-  const total=calcRehab();
-  const f=total.toLocaleString('en-US',{maximumFractionDigits:0});
-  $('f-rehab').value=f; $('r-rehab').value=f;
-  calcFlip(); calcRental();
-  alert(`✓ Rehab total of ${fmt(total)} pushed to Flip & Rental tabs.`);
+  // Auto-push if checkbox is checked
+  const autoPush=$('rh-auto-push');
+  if(autoPush?.checked){
+    const f=grand.toLocaleString('en-US',{maximumFractionDigits:0});
+    const fEl=$('f-rehab'), rEl=$('r-rehab');
+    if(fEl) fEl.value=f;
+    if(rEl) rEl.value=f;
+    calcFlip(); calcRental();
+  }
+
+  // Also sync sale price in realtor calc to ARV
+  const arvVal=$('prop-arv')?.value;
+  if(arvVal && $('rc-sale-price')?.value==='150,000') {
+    // only auto-sync if user hasn't changed it from default
+  }
+
+  return grand;
 }
 
 // ── Save / Load ────────────────────────────────
@@ -1160,7 +1290,7 @@ const SK='pa_deals_v3';
 
 const INPUT_IDS=[
   'prop-address','prop-bbb','prop-sqft','prop-arv','prop-year','prop-hoa',
-  'f-purchase','f-rehab','f-cc','f-scc','f-hold','f-months',
+  'f-purchase','f-rehab','f-cc','f-scc','f-hold','f-months','f-acq-comm-pct',
   'f-hml-ltv','f-hml-pts','f-hml-rate','f-int-type','f-gap-pts','f-gap-rate',
   'f-recomm','f-rcc','f-min-pct','f-min-dol',
   'r-purchase','r-rehab','r-cc','r-hold','r-hml-int','r-hml-pts','r-gap-pts','r-gap-int',
@@ -1173,7 +1303,7 @@ const INPUT_IDS=[
 
 const DEFAULTS={
   'prop-sqft':'1,000','prop-arv':'150,000','prop-hoa':'0',
-  'f-purchase':'100,000','f-rehab':'3,650','f-cc':'3,000','f-scc':'0','f-hold':'3,000','f-months':'6',
+  'f-purchase':'100,000','f-rehab':'3,650','f-cc':'3,000','f-scc':'0','f-hold':'3,000','f-months':'6','f-acq-comm-pct':'3',
   'f-hml-ltv':'1','f-hml-pts':'0','f-hml-rate':'10','f-gap-pts':'0','f-gap-rate':'0',
   'f-recomm':'3','f-rcc':'1','f-min-pct':'12','f-min-dol':'25,000',
   'r-purchase':'100,000','r-rehab':'3,650','r-cc':'3,000','r-hold':'3,000',
@@ -1188,15 +1318,33 @@ const DEFAULTS={
 };
 
 function captureState() {
-  const s={inputs:{},rehab:{}};
+  const s={inputs:{},rehab:{},rehabChk:{},rehabSqft:{}};
   INPUT_IDS.forEach(id=>{ const e=$(id); if(e) s.inputs[id]=e.value; });
-  rehabItems.forEach((_,i)=>{ const e=$(`rh-qty-${i}`); if(e) s.rehab[i]=e.value; });
+  rehabItems.forEach((_,i)=>{
+    const qty=$(`rh-qty-${i}`); if(qty) s.rehab[i]=qty.value;
+    const chk=$(`rh-chk-${i}`); if(chk) s.rehabChk[i]=chk.checked;
+    const sqftOvr=$(`rh-sqft-${i}`); if(sqftOvr) s.rehabSqft[i]=sqftOvr.value;
+  });
   return s;
 }
 
 function applyState(s) {
   if(s.inputs) INPUT_IDS.forEach(id=>{ const e=$(id); if(e&&s.inputs[id]!==undefined) e.value=s.inputs[id]; });
-  if(s.rehab) Object.entries(s.rehab).forEach(([i,v])=>{ const e=$(`rh-qty-${i}`); if(e) e.value=v; });
+  if(s.rehabChk) Object.entries(s.rehabChk).forEach(([i,v])=>{
+    const chk=$(`rh-chk-${i}`); if(chk) chk.checked=v;
+    // sync disabled states
+    const [,,, unit]=rehabItems[i]||[];
+    const isSqft=unit==='/SQFT'||unit==='/100SQFT';
+    const isFlat=unit==='flat';
+    if(isSqft){
+      const ovr=$(`rh-sqft-${i}`), tag=$(`rh-tag-${i}`);
+      if(ovr){ ovr.disabled=v; if(!v && s.rehabSqft?.[i]) ovr.value=s.rehabSqft[i]; }
+      if(tag) tag.style.display=v?'':'none';
+    } else if(!isFlat){
+      const qty=$(`rh-qty-${i}`);
+      if(qty){ qty.disabled=!v; if(s.rehab?.[i]) qty.value=s.rehab[i]; }
+    }
+  });
   updateHeader(); syncAll(); calcSubTo(); calcRehab();
 }
 
@@ -1260,7 +1408,22 @@ function newDeal() {
   if(!confirm('Start a new blank deal? Unsaved changes will be lost.')) return;
   activeDeal=null;
   INPUT_IDS.forEach(id=>{ const e=$(id); if(e) e.value=DEFAULTS[id]||''; });
-  rehabItems.forEach((_,i)=>{ const e=$(`rh-qty-${i}`); if(e) e.value=0; });
+  // Reset rehab rows to defaults
+  rehabItems.forEach((item,i)=>{
+    const [,,,unit,dq]=item;
+    const isSqft=unit==='/SQFT'||unit==='/100SQFT';
+    const isFlat=unit==='flat';
+    const chk=$(`rh-chk-${i}`);
+    if(chk) chk.checked=dq>0;
+    if(isSqft){
+      const ovr=$(`rh-sqft-${i}`), tag=$(`rh-tag-${i}`);
+      if(ovr){ ovr.disabled=dq>0; ovr.value=''; }
+      if(tag) tag.style.display=dq>0?'':'none';
+    } else if(!isFlat){
+      const qty=$(`rh-qty-${i}`);
+      if(qty){ qty.disabled=dq===0; qty.value=dq||''; }
+    }
+  });
   updateHeader(); syncAll(); calcSubTo(); calcRehab(); renderDeals();
 }
 
@@ -1272,7 +1435,6 @@ window.onload=()=>{
   updateHeader(); syncAll();
   renderDeals();
   injectTooltips();
-  // Apply saved settings defaults
   const s = loadSettings();
   if (s.defHmlRate) { $('f-hml-rate').value = s.defHmlRate; }
   if (s.defMonths)  { $('f-months').value   = s.defMonths; }
